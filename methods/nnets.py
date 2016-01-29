@@ -14,6 +14,7 @@ def init_model(input_dim, n_hiddens, ouput_size,r_seed=1234):
         - b2: Second layer biases; has shape (output_size,)
 
         """
+
         rng=np.random.RandomState(r_seed) 
         
         # initialize a model
@@ -22,7 +23,7 @@ def init_model(input_dim, n_hiddens, ouput_size,r_seed=1234):
         model['b1'] = np.zeros(n_hiddens)
         model['W2'] = 0.01 * rng.randn(n_hiddens, ouput_size)
         model['b2'] = np.zeros(ouput_size)
-        
+
         return model
 
 def NN_net_two_layer(X, model,y=None, reg=0.0,p=1.0):
