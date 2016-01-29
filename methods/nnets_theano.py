@@ -80,10 +80,10 @@ def build_model(params,drop_p=1.0,reg=0.0):
     drop_prop     = theano.shared(numpy_floatX(drop_p), name='drop_prop')
 
     #get the parameters
-    W1,b1,W2,b2=params['W1'],params['b1'],params['W2'],params['b2']
+    W1,b1,W2,b2= params['W1'],params['b1'],params['W2'],params['b2']
     
     # get the regularization multiplier   
-    beta=theano.shared(numpy_floatX(reg), name='beta')
+    beta= theano.shared(numpy_floatX(reg), name='beta')
     
     #define Xt theano.matrix and yt theano.ivector 
     Xt = T.matrix('Xt',dtype=config.floatX)
@@ -93,25 +93,27 @@ def build_model(params,drop_p=1.0,reg=0.0):
     # Step 1: Network architecture
     ##################
     # layer One
-    dot1=T.dot(Xt,W1)+b1    #dot1 is N*H
-    H1=reLU(dot1)  # H1 is  N*H
-    out_drop=dropout(H1,use_dropout,drop_prop)  #dropout
+    dot1= T.dot(Xt,W1)+b1    #dot1 is N*H
+    H1= reLU(dot1)  # H1 is  N*H
+    out_drop= dropout(H1,use_dropout,drop_prop)  #dropout
     
     # layer Two
-    dot2=T.dot(out_drop,W2)+b2  #dot2 is N*C
-    score=dot2      #dot2 is N*C
+    dot2= T.dot(out_drop,W2)+b2  #dot2 is N*C
+    score= dot2      #dot2 is N*C
     
     ##################
     # Step 2: Now define the loss function
     ##################
-    N=Xt.shape[0]
-    #hing loss   
-    f=dot2.T
-    correct_cls_scores=f[yt[T.arange(N)],T.arange(N)]
+    N= Xt.shape[0]
+
+    # use hing loss as cost function   
+    f= dot2.T
+    correct_cls_scores= f[yt[T.arange(N)],T.arange(N)]
     margins = reLU(f - correct_cls_scores + 1.0) # the relu here is used to do the T.maximum
-    margins=T.set_subtensor(margins[yt, T.arange(N)],0.0)
-    cost=0.5*beta*(T.sum(W1*W1)+T.sum(W2*W2))+ T.sum( margins ) / N
+    margins= T.set_subtensor(margins[yt, T.arange(N)],0.0)
     
+    # calculate the cost
+    cost= 0.5*beta*(T.sum(W1*W1)+T.sum(W2*W2))+ T.sum( margins ) / N
     
     return Xt,yt,cost,score,use_dropout
 
@@ -205,25 +207,25 @@ def train_net_two_layer(X,y,model,X_val,y_val,reg=0,b_size=70,lr=1e-2,n_epochs=4
          drop_rate: is dropout rate, p=1 mean no dropout. P should be 0< p <=1 
     """
     
-    loss_hist=[]
+    loss_hist= []
     N = X.shape[0]
     epoch = 0
     best_val_acc = 0.0
     best_model = {}
     val_acc_history = []
     
-    X=X.astype(theano.config.floatX)
-    X_val=X_val.astype(theano.config.floatX)
+    X= X.astype(theano.config.floatX)
+    X_val= X_val.astype(theano.config.floatX)
 
-    y=y.astype('int32')
-    y_val=y_val.astype('int32')
-    lr_rate=float(lr)
+    y= y.astype('int32')
+    y_val= y_val.astype('int32')
+    lr_rate= float(lr)
         
     ########################
     # Step 0: Do some preprocess, params inits, and Build model, i.e feedforwad step
     ########################
 
-    Xt,yt,cost,prediction,use_dropout=build_model(model,drop_rate,reg)
+    Xt,yt,cost,prediction,use_dropout= build_model(model,drop_rate,reg)
     f_cost = theano.function([Xt,yt], cost, name='f_cost')
     f_pred = theano.function([Xt],prediction,name='f_pred')
 
@@ -271,15 +273,16 @@ def train_net_two_layer(X,y,model,X_val,y_val,reg=0,b_size=70,lr=1e-2,n_epochs=4
         
         # evaluate cost and gradient
         use_dropout.set_value(1.0) #dropout is enabled 
-        cost_loss=f_grad_shared(X_batch,y_batch)
+        cost_loss= f_grad_shared(X_batch,y_batch)
         f_update(lr_rate)
         loss_hist.append(cost_loss)
         
 
+        # Check if loss is not inf or Nan
         if np.isnan(cost_loss) or np.isinf(cost_loss):
-            print ('Break epoch %d / %d: cost %f, lr %e'
-                 % (epoch, n_epochs, cost_loss, lr_rate))
+            print ('Break epoch %d / %d: cost %f, lr %e'% (epoch, n_epochs, cost_loss, lr_rate))
             break
+
         # every epoch perform an evaluation on the validation set
         first_it = (it == 0)
         epoch_end = (it + 1) % iter_per_epoch == 0
@@ -295,8 +298,8 @@ def train_net_two_layer(X,y,model,X_val,y_val,reg=0,b_size=70,lr=1e-2,n_epochs=4
             # evaluate val accuracy
             use_dropout.set_value(0.0)  #disable dropout
             scores_val = f_pred(X_val)
-            pred_class=np.argmax(scores_val,axis=1)
-            val_acc=np.mean(y_val==pred_class)
+            pred_class= np.argmax(scores_val,axis=1)
+            val_acc= np.mean(y_val==pred_class)
             val_acc_history.append(val_acc)
             
 
