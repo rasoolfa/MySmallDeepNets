@@ -58,6 +58,7 @@ def dropout(H,use_dropout,dropout_prob):
       use_dropout is a flag that indicates whether apply dropout or not
       dropout_prob is dropout rate
     '''
+
     rng = get_random_start_seed()
     srng = RandomStreams(rng.randint(999999))
     mask=srng.binomial(H.shape, p=dropout_prob,n=1, dtype=config.floatX)/(dropout_prob)
